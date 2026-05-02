@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { supabase } from '../../lib/supabase';
 import { redirect } from 'next/navigation';
 
 export async function GET(req, { params }) {
