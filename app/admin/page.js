@@ -7,50 +7,164 @@ if (typeof window !== 'undefined') {
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+function gerarCodigo() {
+  return Math.random().toString(36).substring(2, 8);
+}
 
 export default function Admin() {
   const [code, setCode] = useState('');
   const [url, setUrl] = useState('');
   const [msg, setMsg] = useState('');
+  const [links, setLinks] = useState([]);
+
+  const carregarLinks = async () => {
+    try {
+      const res = await fetch('/api/list');
+      const data = await res.json();
+      setLinks(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    carregarLinks();
+  }, []);
 
   const handleSubmit = async () => {
+    if (!url) {
+      setMsg('Digite uma URL');
+      return;
+    }
+
+    const finalCode = code || gerarCodigo();
+
     const res = await fetch('/api/create', {
       method: 'POST',
-      body: JSON.stringify({ code, url }),
+      body: JSON.stringify({ code: finalCode, url }),
       headers: { 'Content-Type': 'application/json' }
     });
 
     if (res.ok) {
-      setMsg(`Criado: perigo.click/${code}`);
+      setMsg(`✅ Criado: https://perigo.click/${finalCode}`);
+      setCode('');
+      setUrl('');
+      carregarLinks();
     } else {
-      setMsg('Erro');
+      setMsg('❌ Erro (código pode já existir)');
     }
   };
 
+  const copiar = (c) => {
+    navigator.clipboard.writeText(`https://perigo.click/${c}`);
+    setMsg(`📋 Copiado: perigo.click/${c}`);
+  };
+
   return (
-    <div style={{ padding: 40 }}>
-      <h1>Perigo.click</h1>
+    <div style={{
+      maxWidth: 700,
+      margin: '60px auto',
+      fontFamily: 'system-ui, sans-serif',
+      padding: 20
+    }}>
+      <h1 style={{ fontSize: 32, marginBottom: 20 }}>
+        🔗 Perigo.click
+      </h1>
 
-      <input
-        placeholder="Código"
-        value={code}
-        onChange={(e) => setCode(e.target.value)}
-      />
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 10,
+        marginBottom: 20
+      }}>
+        <input
+          placeholder="Código (opcional)"
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          style={{
+            padding: 12,
+            border: '1px solid #ccc',
+            borderRadius: 8
+          }}
+        />
 
-      <br /><br />
+        <input
+          placeholder="URL de destino"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          style={{
+            padding: 12,
+            border: '1px solid #ccc',
+            borderRadius: 8
+          }}
+        />
 
-      <input
-        placeholder="URL"
-        value={url}
-        onChange={(e) => setUrl(e.target.value)}
-      />
+        <button
+          onClick={handleSubmit}
+          style={{
+            padding: 12,
+            borderRadius: 8,
+            background: '#111',
+            color: '#fff',
+            cursor: 'pointer'
+          }}
+        >
+          Criar link
+        </button>
+      </div>
 
-      <br /><br />
+      {msg && (
+        <p style={{ marginBottom: 20 }}>{msg}</p>
+      )}
 
-      <button onClick={handleSubmit}>Criar</button>
+      <h2 style={{ marginBottom: 10 }}>📊 Seus links</h2>
 
-      <p>{msg}</p>
+      {links.length === 0 && <p>Nenhum link ainda</p>}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {links.map((l) => (
+          <div key={l.code} style={{
+            border: '1px solid #eee',
+            borderRadius: 10,
+            padding: 15,
+            background: '#fafafa'
+          }}>
+            <div style={{ fontWeight: 'bold' }}>
+              perigo.click/{l.code}
+            </div>
+
+            <div style={{
+              fontSize: 12,
+              color: '#666',
+              marginTop: 4
+            }}>
+              {l.url}
+            </div>
+
+            <div style={{
+              marginTop: 8,
+              fontSize: 13
+            }}>
+              👆 {l.clicks || 0} cliques
+            </div>
+
+            <button
+              onClick={() => copiar(l.code)}
+              style={{
+                marginTop: 10,
+                padding: 8,
+                borderRadius: 6,
+                border: '1px solid #ccc',
+                cursor: 'pointer'
+              }}
+            >
+              Copiar link
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
