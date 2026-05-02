@@ -1,3 +1,10 @@
+if (typeof window !== 'undefined') {
+  const senha = prompt("Senha?");
+  if (senha !== "sua-senha-aqui") {
+    document.body.innerHTML = "Acesso negado";
+  }
+}
+
 'use client';
 
 import { useState } from 'react';
