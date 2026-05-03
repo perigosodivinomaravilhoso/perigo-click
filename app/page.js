@@ -11,8 +11,16 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
   const [code, setCode] = useState('');
   const [url, setUrl] = useState('');
-  const [msg, setMsg] = useState('');
   const [links, setLinks] = useState([]);
+  const [toast, setToast] = useState(null);
+
+  const showToast = (text, type = 'success') => {
+    setToast({ text, type });
+
+    setTimeout(() => {
+      setToast(null);
+    }, 3000);
+  };
 
   // 🗑 Deletar link
   const deletar = async (code) => {
@@ -25,6 +33,7 @@ export default function Admin() {
       headers: { 'Content-Type': 'application/json' }
     });
 
+    showToast('Link deletado', 'success');
     carregarLinks();
   };
 
@@ -60,7 +69,7 @@ export default function Admin() {
   // ➕ Criar link
   const handleSubmit = async () => {
     if (!url) {
-      setMsg('Digite uma URL');
+      showToast('❌ Digite uma URL', 'error');
       return;
     }
 
@@ -74,20 +83,20 @@ export default function Admin() {
     });
 
     if (res.ok) {
-      setMsg(`✅ Criado: https://perigo.click/${finalCode}`);
+      showToast(`✅ Criado: perigo.click/${finalCode}`, 'success');
       setCode('');
       setUrl('');
       carregarLinks();
     } else {
       const text = await res.text();
-     setMsg(text);
+      showToast(text, 'error');
     }
   };
 
   // 📋 Copiar link
   const copiar = (c) => {
     navigator.clipboard.writeText(`https://perigo.click/${c}`);
-    setMsg(`📋 Copiado: perigo.click/${c}`);
+    showToast('📋 Link copiado!', 'success');
   };
 
   if (loading) {
@@ -147,19 +156,6 @@ export default function Admin() {
           Criar link
         </button>
       </div>
-
-      {msg && (
-  <div style={{
-    marginBottom: 20,
-    padding: 12,
-    borderRadius: 8,
-    background: msg.startsWith('❌') ? '#ffe5e5' : '#e6f7ff',
-    color: msg.startsWith('❌') ? '#b00020' : '#004085',
-    border: '1px solid #ddd'
-  }}>
-    {msg}
-  </div>
-)}
 
       {/* LISTA */}
       <h2 style={{ marginBottom: 10 }}>📊 Seus links</h2>
@@ -223,6 +219,23 @@ export default function Admin() {
           </div>
         ))}
       </div>
+
+      {/* TOAST */}
+      {toast && (
+        <div style={{
+          position: 'fixed',
+          bottom: 20,
+          right: 20,
+          padding: '12px 16px',
+          borderRadius: 8,
+          background: toast.type === 'error' ? '#ff4d4f' : '#111',
+          color: '#fff',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+          zIndex: 9999
+        }}>
+          {toast.text}
+        </div>
+      )}
     </div>
   );
 }
