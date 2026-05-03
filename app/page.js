@@ -80,7 +80,7 @@ export default function Admin() {
       carregarLinks();
     } else {
       const text = await res.text();
-      setMsg(`❌ ${text}`);
+     setMsg(text);
     }
   };
 
