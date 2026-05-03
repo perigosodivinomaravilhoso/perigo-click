@@ -16,13 +16,18 @@ export default function Admin() {
 
   const showToast = (text, type = 'success') => {
     setToast({ text, type });
-
-    setTimeout(() => {
-      setToast(null);
-    }, 3000);
+    setTimeout(() => setToast(null), 3000);
   };
 
-  // 🗑 Deletar link
+  // 📊 DASHBOARD DATA
+  const totalLinks = links.length;
+  const totalClicks = links.reduce((acc, l) => acc + (l.clicks || 0), 0);
+  const topLink = links.reduce((prev, current) =>
+    (current.clicks || 0) > (prev?.clicks || 0) ? current : prev,
+    null
+  );
+
+  // 🗑 Deletar
   const deletar = async (code) => {
     if (!confirm('Tem certeza que deseja deletar?')) return;
 
@@ -33,11 +38,11 @@ export default function Admin() {
       headers: { 'Content-Type': 'application/json' }
     });
 
-    showToast('Link deletado', 'success');
+    showToast('Link deletado');
     carregarLinks();
   };
 
-  // 🔐 Verifica login
+  // 🔐 Login
   useEffect(() => {
     const checkUser = async () => {
       const { data } = await supabase.auth.getUser();
@@ -53,20 +58,14 @@ export default function Admin() {
     checkUser();
   }, []);
 
-  // 📊 Carregar histórico
+  // 📊 Carregar links
   const carregarLinks = async () => {
-    try {
-      const res = await fetch('/api/list', {
-        credentials: 'include'
-      });
-      const data = await res.json();
-      setLinks(data);
-    } catch (err) {
-      console.error(err);
-    }
+    const res = await fetch('/api/list', { credentials: 'include' });
+    const data = await res.json();
+    setLinks(data);
   };
 
-  // ➕ Criar link
+  // ➕ Criar
   const handleSubmit = async () => {
     if (!url) {
       showToast('❌ Digite uma URL', 'error');
@@ -83,7 +82,7 @@ export default function Admin() {
     });
 
     if (res.ok) {
-      showToast(`✅ Criado: perigo.click/${finalCode}`, 'success');
+      showToast(`✅ Criado: perigo.click/${finalCode}`);
       setCode('');
       setUrl('');
       carregarLinks();
@@ -93,20 +92,18 @@ export default function Admin() {
     }
   };
 
-  // 📋 Copiar link
+  // 📋 Copiar
   const copiar = (c) => {
     navigator.clipboard.writeText(`https://perigo.click/${c}`);
-    showToast('📋 Link copiado!', 'success');
+    showToast('📋 Link copiado!');
   };
 
-  if (loading) {
-    return <p style={{ padding: 40 }}>Carregando...</p>;
-  }
+  if (loading) return <p style={{ padding: 40 }}>Carregando...</p>;
 
   return (
     <div style={{
-      maxWidth: 700,
-      margin: '60px auto',
+      maxWidth: 900,
+      margin: '40px auto',
       fontFamily: 'system-ui, sans-serif',
       padding: 20
     }}>
@@ -114,46 +111,40 @@ export default function Admin() {
         🔗 Perigo.click
       </h1>
 
+      {/* DASHBOARD */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gap: 12,
+        marginBottom: 30
+      }}>
+        <Card title="Links" value={totalLinks} />
+        <Card title="Cliques" value={totalClicks} highlight />
+        <Card title="Top link" value={topLink ? topLink.code : '—'} />
+      </div>
+
       {/* FORM */}
       <div style={{
         display: 'flex',
-        flexDirection: 'column',
         gap: 10,
-        marginBottom: 20
+        marginBottom: 30
       }}>
         <input
-          placeholder="Código (opcional)"
+          placeholder="Código"
           value={code}
           onChange={(e) => setCode(e.target.value)}
-          style={{
-            padding: 12,
-            border: '1px solid #ccc',
-            borderRadius: 8
-          }}
+          style={inputStyle}
         />
 
         <input
-          placeholder="URL de destino"
+          placeholder="URL"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          style={{
-            padding: 12,
-            border: '1px solid #ccc',
-            borderRadius: 8
-          }}
+          style={inputStyle}
         />
 
-        <button
-          onClick={handleSubmit}
-          style={{
-            padding: 12,
-            borderRadius: 8,
-            background: '#111',
-            color: '#fff',
-            cursor: 'pointer'
-          }}
-        >
-          Criar link
+        <button onClick={handleSubmit} style={buttonStyle}>
+          Criar
         </button>
       </div>
 
@@ -164,58 +155,28 @@ export default function Admin() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {links.map((l) => (
-          <div key={l.code} style={{
-            border: '1px solid #eee',
-            borderRadius: 10,
-            padding: 15,
-            background: '#fafafa'
-          }}>
+          <div key={l.code} style={cardStyle}>
             <div style={{ fontWeight: 'bold' }}>
               perigo.click/{l.code}
             </div>
 
-            <div style={{
-              fontSize: 12,
-              color: '#666',
-              marginTop: 4
-            }}>
+            <div style={{ fontSize: 12, color: '#666' }}>
               {l.url}
             </div>
 
-            <div style={{
-              marginTop: 8,
-              fontSize: 13
-            }}>
+            <div style={{ fontSize: 13 }}>
               👆 {l.clicks || 0} cliques
             </div>
 
-            <button
-              onClick={() => copiar(l.code)}
-              style={{
-                marginTop: 10,
-                padding: 8,
-                borderRadius: 6,
-                border: '1px solid #ccc',
-                cursor: 'pointer'
-              }}
-            >
-              📋 Copiar link
-            </button>
+            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+              <button onClick={() => copiar(l.code)} style={miniBtn}>
+                📋 Copiar
+              </button>
 
-            <button
-              onClick={() => deletar(l.code)}
-              style={{
-                marginTop: 6,
-                padding: 8,
-                borderRadius: 6,
-                border: '1px solid #e00',
-                color: '#e00',
-                cursor: 'pointer',
-                background: '#fff'
-              }}
-            >
-              🗑 Deletar
-            </button>
+              <button onClick={() => deletar(l.code)} style={deleteBtn}>
+                🗑 Deletar
+              </button>
+            </div>
           </div>
         ))}
       </div>
@@ -229,9 +190,7 @@ export default function Admin() {
           padding: '12px 16px',
           borderRadius: 8,
           background: toast.type === 'error' ? '#ff4d4f' : '#111',
-          color: '#fff',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
-          zIndex: 9999
+          color: '#fff'
         }}>
           {toast.text}
         </div>
@@ -239,3 +198,55 @@ export default function Admin() {
     </div>
   );
 }
+
+/* COMPONENTES E ESTILOS */
+
+const Card = ({ title, value, highlight }) => (
+  <div style={{
+    padding: 16,
+    borderRadius: 10,
+    background: highlight ? '#e50914' : '#111',
+    color: '#fff'
+  }}>
+    <div style={{ fontSize: 12, opacity: 0.7 }}>{title}</div>
+    <div style={{ fontSize: 22, fontWeight: 'bold' }}>{value}</div>
+  </div>
+);
+
+const inputStyle = {
+  padding: 12,
+  borderRadius: 8,
+  border: '1px solid #ccc',
+  flex: 1
+};
+
+const buttonStyle = {
+  padding: 12,
+  borderRadius: 8,
+  background: '#111',
+  color: '#fff',
+  cursor: 'pointer'
+};
+
+const cardStyle = {
+  border: '1px solid #eee',
+  borderRadius: 10,
+  padding: 15,
+  background: '#fafafa'
+};
+
+const miniBtn = {
+  padding: 6,
+  borderRadius: 6,
+  border: '1px solid #ccc',
+  cursor: 'pointer'
+};
+
+const deleteBtn = {
+  padding: 6,
+  borderRadius: 6,
+  border: '1px solid #e00',
+  color: '#e00',
+  cursor: 'pointer',
+  background: '#fff'
+};
