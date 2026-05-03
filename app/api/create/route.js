@@ -21,10 +21,16 @@ export async function POST(req) {
     return new Response('Missing code or url', { status: 400 });
   }
 
-  // 💾 inserir no banco
+  // 💾 inserir no banco (AGORA COM user_id 🔥)
   const { error } = await supabase
     .from('links')
-    .insert([{ code, url }]);
+    .insert([
+      {
+        code,
+        url,
+        user_id: user.id // 👈 ESSA É A LINHA IMPORTANTE
+      }
+    ]);
 
   if (error) {
     return new Response(error.message, { status: 500 });
