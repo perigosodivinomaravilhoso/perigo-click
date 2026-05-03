@@ -1,10 +1,3 @@
-if (typeof window !== 'undefined') {
-  const senha = prompt("Senha?");
-  if (senha !== "sua-senha-aqui") {
-    document.body.innerHTML = "Acesso negado";
-  }
-}
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -14,10 +7,21 @@ function gerarCodigo() {
 }
 
 export default function Admin() {
+  const [autorizado, setAutorizado] = useState(false);
   const [code, setCode] = useState('');
   const [url, setUrl] = useState('');
   const [msg, setMsg] = useState('');
   const [links, setLinks] = useState([]);
+
+  useEffect(() => {
+    const senha = prompt("Senha?");
+    if (senha === "sua-senha-aqui") {
+      setAutorizado(true);
+      carregarLinks();
+    } else {
+      setAutorizado(false);
+    }
+  }, []);
 
   const carregarLinks = async () => {
     try {
@@ -28,10 +32,6 @@ export default function Admin() {
       console.error(err);
     }
   };
-
-  useEffect(() => {
-    carregarLinks();
-  }, []);
 
   const handleSubmit = async () => {
     if (!url) {
@@ -61,6 +61,10 @@ export default function Admin() {
     navigator.clipboard.writeText(`https://perigo.click/${c}`);
     setMsg(`📋 Copiado: perigo.click/${c}`);
   };
+
+  if (!autorizado) {
+    return <p style={{ padding: 40 }}>Acesso negado</p>;
+  }
 
   return (
     <div style={{
