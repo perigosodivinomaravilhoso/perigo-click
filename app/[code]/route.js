@@ -1,22 +1,26 @@
-import { supabase } from '../../lib/supabase';
-import { redirect } from 'next/navigation';
+import { createClient } from '../../lib/supabase-server';
 
 export async function GET(req, { params }) {
-  const { data } = await supabase
+  const { code } = params;
+  const supabase = createClient();
+
+  // busca link
+  const { data, error } = await supabase
     .from('links')
     .select('*')
-    .eq('code', params.code)
+    .eq('code', code)
     .single();
 
-  if (data?.url) {
-    // incrementa clique
-    await supabase
-      .from('links')
-      .update({ clicks: data.clicks + 1 })
-      .eq('code', params.code);
-
-    redirect(data.url);
-  } else {
-    return new Response('Link não encontrado', { status: 404 });
+  if (error || !data) {
+    return new Response('Not found', { status: 404 });
   }
+
+  // incrementa clique
+  await supabase
+    .from('links')
+    .update({ clicks: (data.clicks || 0) + 1 })
+    .eq('code', code);
+
+  // redireciona
+  return Response.redirect(data.url, 302);
 }
