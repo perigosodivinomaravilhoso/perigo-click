@@ -21,7 +21,8 @@ export async function GET(req, { params }) {
   await supabase
     .from('links')
     .update({ clicks: (data.clicks || 0) + 1 })
-    .eq('code', code);
+    .eq('code', code)
+    .eq('user_id', data.user_id);
 
   // redireciona
   return Response.redirect(data.url, 302);
