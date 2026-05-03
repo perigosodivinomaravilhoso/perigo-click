@@ -20,7 +20,6 @@ export default function Admin() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  // 📊 DASHBOARD
   const totalLinks = links.length;
   const totalClicks = links.reduce((acc, l) => acc + (l.clicks || 0), 0);
   const topLink = links.reduce((prev, current) =>
@@ -28,14 +27,12 @@ export default function Admin() {
     null
   );
 
-  // 🔄 ordenação
   const sortedLinks = [...links].sort((a, b) => {
     return order === 'desc'
       ? new Date(b.created_at) - new Date(a.created_at)
       : new Date(a.created_at) - new Date(b.created_at);
   });
 
-  // 🗑 deletar
   const deletar = async (code) => {
     if (!confirm('Tem certeza que deseja deletar?')) return;
 
@@ -50,7 +47,6 @@ export default function Admin() {
     carregarLinks();
   };
 
-  // 🔐 login
   useEffect(() => {
     const checkUser = async () => {
       const { data } = await supabase.auth.getUser();
@@ -66,14 +62,12 @@ export default function Admin() {
     checkUser();
   }, []);
 
-  // 📊 carregar
   const carregarLinks = async () => {
     const res = await fetch('/api/list', { credentials: 'include' });
     const data = await res.json();
     setLinks(data);
   };
 
-  // ➕ criar
   const handleSubmit = async () => {
     if (!url) {
       showToast('❌ Digite uma URL', 'error');
@@ -100,7 +94,6 @@ export default function Admin() {
     }
   };
 
-  // 📋 copiar
   const copiar = (c) => {
     navigator.clipboard.writeText(`https://perigo.click/${c}`);
     showToast('📋 Link copiado!');
@@ -156,11 +149,10 @@ export default function Admin() {
         </button>
       </div>
 
-      {/* HEADER + FILTRO */}
+      {/* HEADER */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center',
         marginBottom: 10
       }}>
         <h2>📊 Seus links</h2>
@@ -179,13 +171,11 @@ export default function Admin() {
         </select>
       </div>
 
-      {links.length === 0 && <p>Nenhum link ainda</p>}
-
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {sortedLinks.map((l) => (
           <div key={l.code} style={cardStyle}>
 
-            {/* LINHA 1 */}
+            {/* topo */}
             <div style={{
               display: 'flex',
               justifyContent: 'space-between'
@@ -197,7 +187,7 @@ export default function Admin() {
               </span>
             </div>
 
-            {/* LINHA 2 */}
+            {/* meio */}
             <div style={{
               display: 'flex',
               justifyContent: 'space-between',
@@ -214,14 +204,26 @@ export default function Admin() {
               </span>
             </div>
 
-            {/* BOTÕES */}
-            <div style={{ display: 'flex', gap: 6 }}>
-              <button onClick={() => copiar(l.code)} style={miniBtn}>
-                Copiar
+            {/* ações */}
+            <div style={{
+              display: 'flex',
+              gap: 8,
+              marginTop: 12,
+              paddingTop: 10,
+              borderTop: '1px solid #eee'
+            }}>
+              <button
+                onClick={() => copiar(l.code)}
+                style={copyBtn}
+              >
+                📋 Copiar
               </button>
 
-              <button onClick={() => deletar(l.code)} style={deleteBtn}>
-                Deletar
+              <button
+                onClick={() => deletar(l.code)}
+                style={deleteBtn}
+              >
+                🗑 Deletar
               </button>
             </div>
 
@@ -285,21 +287,21 @@ const cardStyle = {
   background: '#fafafa'
 };
 
-const miniBtn = {
+const copyBtn = {
   fontSize: 12,
-  padding: '4px 8px',
-  borderRadius: 6,
-  border: '1px solid #ccc',
+  padding: '6px 12px',
+  borderRadius: 8,
+  border: '1px solid #ddd',
   background: '#fff',
   cursor: 'pointer'
 };
 
 const deleteBtn = {
   fontSize: 12,
-  padding: '4px 8px',
-  borderRadius: 6,
-  border: '1px solid #eee',
-  color: '#999',
+  padding: '6px 12px',
+  borderRadius: 8,
+  border: '1px solid #ff4d4f',
+  color: '#ff4d4f',
   background: '#fff',
   cursor: 'pointer'
 };
