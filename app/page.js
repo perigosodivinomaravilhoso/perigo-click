@@ -13,13 +13,14 @@ export default function Admin() {
   const [url, setUrl] = useState('');
   const [links, setLinks] = useState([]);
   const [toast, setToast] = useState(null);
+  const [order, setOrder] = useState('desc');
 
   const showToast = (text, type = 'success') => {
     setToast({ text, type });
     setTimeout(() => setToast(null), 3000);
   };
 
-  // 📊 DASHBOARD DATA
+  // 📊 DASHBOARD
   const totalLinks = links.length;
   const totalClicks = links.reduce((acc, l) => acc + (l.clicks || 0), 0);
   const topLink = links.reduce((prev, current) =>
@@ -27,7 +28,14 @@ export default function Admin() {
     null
   );
 
-  // 🗑 Deletar
+  // 🔄 ordenação
+  const sortedLinks = [...links].sort((a, b) => {
+    return order === 'desc'
+      ? new Date(b.created_at) - new Date(a.created_at)
+      : new Date(a.created_at) - new Date(b.created_at);
+  });
+
+  // 🗑 deletar
   const deletar = async (code) => {
     if (!confirm('Tem certeza que deseja deletar?')) return;
 
@@ -42,7 +50,7 @@ export default function Admin() {
     carregarLinks();
   };
 
-  // 🔐 Login
+  // 🔐 login
   useEffect(() => {
     const checkUser = async () => {
       const { data } = await supabase.auth.getUser();
@@ -58,14 +66,14 @@ export default function Admin() {
     checkUser();
   }, []);
 
-  // 📊 Carregar links
+  // 📊 carregar
   const carregarLinks = async () => {
     const res = await fetch('/api/list', { credentials: 'include' });
     const data = await res.json();
     setLinks(data);
   };
 
-  // ➕ Criar
+  // ➕ criar
   const handleSubmit = async () => {
     if (!url) {
       showToast('❌ Digite uma URL', 'error');
@@ -92,7 +100,7 @@ export default function Admin() {
     }
   };
 
-  // 📋 Copiar
+  // 📋 copiar
   const copiar = (c) => {
     navigator.clipboard.writeText(`https://perigo.click/${c}`);
     showToast('📋 Link copiado!');
@@ -148,35 +156,75 @@ export default function Admin() {
         </button>
       </div>
 
-      {/* LISTA */}
-      <h2 style={{ marginBottom: 10 }}>📊 Seus links</h2>
+      {/* HEADER + FILTRO */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 10
+      }}>
+        <h2>📊 Seus links</h2>
+
+        <select
+          value={order}
+          onChange={(e) => setOrder(e.target.value)}
+          style={{
+            padding: 6,
+            borderRadius: 6,
+            border: '1px solid #ccc'
+          }}
+        >
+          <option value="desc">Mais recentes</option>
+          <option value="asc">Mais antigos</option>
+        </select>
+      </div>
 
       {links.length === 0 && <p>Nenhum link ainda</p>}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {links.map((l) => (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {sortedLinks.map((l) => (
           <div key={l.code} style={cardStyle}>
-            <div style={{ fontWeight: 'bold' }}>
-              perigo.click/{l.code}
+
+            {/* LINHA 1 */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between'
+            }}>
+              <strong>perigo.click/{l.code}</strong>
+
+              <span style={{ fontSize: 12, color: '#999' }}>
+                {new Date(l.created_at).toLocaleDateString()}
+              </span>
             </div>
 
-            <div style={{ fontSize: 12, color: '#666' }}>
-              {l.url}
+            {/* LINHA 2 */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              fontSize: 13,
+              color: '#555'
+            }}>
+              <span>{l.url}</span>
+
+              <span style={{
+                paddingLeft: 10,
+                borderLeft: '1px solid #ddd'
+              }}>
+                👆 {l.clicks || 0}
+              </span>
             </div>
 
-            <div style={{ fontSize: 13 }}>
-              👆 {l.clicks || 0} cliques
-            </div>
-
-            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+            {/* BOTÕES */}
+            <div style={{ display: 'flex', gap: 6 }}>
               <button onClick={() => copiar(l.code)} style={miniBtn}>
-                📋 Copiar
+                Copiar
               </button>
 
               <button onClick={() => deletar(l.code)} style={deleteBtn}>
-                🗑 Deletar
+                Deletar
               </button>
             </div>
+
           </div>
         ))}
       </div>
@@ -199,7 +247,7 @@ export default function Admin() {
   );
 }
 
-/* COMPONENTES E ESTILOS */
+/* COMPONENTES */
 
 const Card = ({ title, value, highlight }) => (
   <div style={{
@@ -212,6 +260,8 @@ const Card = ({ title, value, highlight }) => (
     <div style={{ fontSize: 22, fontWeight: 'bold' }}>{value}</div>
   </div>
 );
+
+/* ESTILOS */
 
 const inputStyle = {
   padding: 12,
@@ -236,17 +286,20 @@ const cardStyle = {
 };
 
 const miniBtn = {
-  padding: 6,
+  fontSize: 12,
+  padding: '4px 8px',
   borderRadius: 6,
   border: '1px solid #ccc',
+  background: '#fff',
   cursor: 'pointer'
 };
 
 const deleteBtn = {
-  padding: 6,
+  fontSize: 12,
+  padding: '4px 8px',
   borderRadius: 6,
-  border: '1px solid #e00',
-  color: '#e00',
-  cursor: 'pointer',
-  background: '#fff'
+  border: '1px solid #eee',
+  color: '#999',
+  background: '#fff',
+  cursor: 'pointer'
 };
