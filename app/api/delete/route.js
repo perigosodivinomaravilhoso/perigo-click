@@ -16,7 +16,8 @@ export async function POST(req) {
   const { error } = await supabase
     .from('links')
     .delete()
-    .eq('code', code);
+    .eq('code', code)
+    .eq('user_id', user.id)
 
   if (error) {
     return new Response(error.message, { status: 500 });
