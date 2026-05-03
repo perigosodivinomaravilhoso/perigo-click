@@ -14,6 +14,20 @@ export default function Admin() {
   const [msg, setMsg] = useState('');
   const [links, setLinks] = useState([]);
 
+  // 🗑 Deletar link
+  const deletar = async (code) => {
+    if (!confirm('Tem certeza que deseja deletar?')) return;
+
+    await fetch('/api/delete', {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({ code }),
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    carregarLinks();
+  };
+
   // 🔐 Verifica login
   useEffect(() => {
     const checkUser = async () => {
@@ -33,7 +47,9 @@ export default function Admin() {
   // 📊 Carregar histórico
   const carregarLinks = async () => {
     try {
-      const res = await fetch('/api/list');
+      const res = await fetch('/api/list', {
+        credentials: 'include'
+      });
       const data = await res.json();
       setLinks(data);
     } catch (err) {
@@ -51,8 +67,8 @@ export default function Admin() {
     const finalCode = code || gerarCodigo();
 
     const res = await fetch('/api/create', {
-      credentials: 'include',
       method: 'POST',
+      credentials: 'include',
       body: JSON.stringify({ code: finalCode, url }),
       headers: { 'Content-Type': 'application/json' }
     });
@@ -74,7 +90,6 @@ export default function Admin() {
     setMsg(`📋 Copiado: perigo.click/${c}`);
   };
 
-  // ⏳ loading
   if (loading) {
     return <p style={{ padding: 40 }}>Carregando...</p>;
   }
@@ -179,7 +194,22 @@ export default function Admin() {
                 cursor: 'pointer'
               }}
             >
-              Copiar link
+              📋 Copiar link
+            </button>
+
+            <button
+              onClick={() => deletar(l.code)}
+              style={{
+                marginTop: 6,
+                padding: 8,
+                borderRadius: 6,
+                border: '1px solid #e00',
+                color: '#e00',
+                cursor: 'pointer',
+                background: '#fff'
+              }}
+            >
+              🗑 Deletar
             </button>
           </div>
         ))}
