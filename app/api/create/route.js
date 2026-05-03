@@ -35,11 +35,11 @@ export async function POST(req) {
   if (error) {
   // código duplicado
   if (error.code === '23505') {
-    return new Response('Esse código já existe. Tente outro.', { status: 400 });
+    return new Response('❌ Esse código já existe. Tente outro.', { status: 400 });
   }
 
   // fallback
-  return new Response('Erro ao criar o link. Tente novamente.', { status: 500 });
+  return new Response('❌ Erro ao criar o link. Tente novamente.', { status: 500 });
 }
 
   return Response.json({ success: true });
