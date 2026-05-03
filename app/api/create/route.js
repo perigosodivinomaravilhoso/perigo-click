@@ -33,8 +33,14 @@ export async function POST(req) {
     ]);
 
   if (error) {
-    return new Response(error.message, { status: 500 });
+  // código duplicado
+  if (error.code === '23505') {
+    return new Response('Esse código já existe. Tente outro.', { status: 400 });
   }
+
+  // fallback
+  return new Response('Erro ao criar o link. Tente novamente.', { status: 500 });
+}
 
   return Response.json({ success: true });
 }
