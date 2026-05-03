@@ -62,7 +62,8 @@ export default function Admin() {
       setUrl('');
       carregarLinks();
     } else {
-      setMsg('❌ Erro (código pode já existir)');
+      const text = await res.text();
+      setMsg(`❌ ${text}`);
     }
   };
 
