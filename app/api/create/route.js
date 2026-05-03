@@ -23,7 +23,8 @@ export async function POST(req) {
     .insert([{ code, url }]);
 
   if (error) {
-    return new Response('Erro', { status: 500 });
+    console.log(error);
+  return new Response(error.message, { status: 500 });
   }
 
   return Response.json({ success: true });
