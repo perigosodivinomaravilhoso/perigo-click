@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../lib/supabase';
 
 function gerarCodigo() {
   return Math.random().toString(36).substring(2, 8);
