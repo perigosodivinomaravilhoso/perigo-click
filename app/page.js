@@ -149,8 +149,17 @@ export default function Admin() {
       </div>
 
       {msg && (
-        <p style={{ marginBottom: 20 }}>{msg}</p>
-      )}
+  <div style={{
+    marginBottom: 20,
+    padding: 12,
+    borderRadius: 8,
+    background: msg.startsWith('❌') ? '#ffe5e5' : '#e6f7ff',
+    color: msg.startsWith('❌') ? '#b00020' : '#004085',
+    border: '1px solid #ddd'
+  }}>
+    {msg}
+  </div>
+)}
 
       {/* LISTA */}
       <h2 style={{ marginBottom: 10 }}>📊 Seus links</h2>
