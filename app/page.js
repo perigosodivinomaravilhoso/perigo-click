@@ -51,6 +51,7 @@ export default function Admin() {
     const finalCode = code || gerarCodigo();
 
     const res = await fetch('/api/create', {
+      credentials: 'include',
       method: 'POST',
       body: JSON.stringify({ code: finalCode, url }),
       headers: { 'Content-Type': 'application/json' }
