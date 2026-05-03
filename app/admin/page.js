@@ -1,28 +1,36 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
 
 function gerarCodigo() {
   return Math.random().toString(36).substring(2, 8);
 }
 
 export default function Admin() {
-  const [autorizado, setAutorizado] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [code, setCode] = useState('');
   const [url, setUrl] = useState('');
   const [msg, setMsg] = useState('');
   const [links, setLinks] = useState([]);
 
+  // 🔐 Verifica login
   useEffect(() => {
-    const senha = prompt("Senha?");
-    if (senha === "sua-senha-aqui") {
-      setAutorizado(true);
-      carregarLinks();
-    } else {
-      setAutorizado(false);
-    }
+    const checkUser = async () => {
+      const { data } = await supabase.auth.getUser();
+
+      if (!data.user) {
+        window.location.href = '/login';
+      } else {
+        carregarLinks();
+        setLoading(false);
+      }
+    };
+
+    checkUser();
   }, []);
 
+  // 📊 Carregar histórico
   const carregarLinks = async () => {
     try {
       const res = await fetch('/api/list');
@@ -33,6 +41,7 @@ export default function Admin() {
     }
   };
 
+  // ➕ Criar link
   const handleSubmit = async () => {
     if (!url) {
       setMsg('Digite uma URL');
@@ -57,13 +66,15 @@ export default function Admin() {
     }
   };
 
+  // 📋 Copiar link
   const copiar = (c) => {
     navigator.clipboard.writeText(`https://perigo.click/${c}`);
     setMsg(`📋 Copiado: perigo.click/${c}`);
   };
 
-  if (!autorizado) {
-    return <p style={{ padding: 40 }}>Acesso negado</p>;
+  // ⏳ loading
+  if (loading) {
+    return <p style={{ padding: 40 }}>Carregando...</p>;
   }
 
   return (
@@ -77,6 +88,7 @@ export default function Admin() {
         🔗 Perigo.click
       </h1>
 
+      {/* FORM */}
       <div style={{
         display: 'flex',
         flexDirection: 'column',
@@ -123,6 +135,7 @@ export default function Admin() {
         <p style={{ marginBottom: 20 }}>{msg}</p>
       )}
 
+      {/* LISTA */}
       <h2 style={{ marginBottom: 10 }}>📊 Seus links</h2>
 
       {links.length === 0 && <p>Nenhum link ainda</p>}
@@ -170,5 +183,7 @@ export default function Admin() {
         ))}
       </div>
     </div>
+  );
+}
   );
 }
