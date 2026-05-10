@@ -187,22 +187,45 @@ export default function Admin() {
               </span>
             </div>
 
-            {/* meio */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              fontSize: 13,
-              color: '#555'
-            }}>
-              <span>{l.url}</span>
+           {/* meio */}
+<div style={{
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  gap: 20
+}}>
 
-              <span style={{
-                paddingLeft: 10,
-                borderLeft: '1px solid #ddd'
-              }}>
-                👆 {l.clicks || 0}
-              </span>
-            </div>
+  {/* infos */}
+  <div style={{
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 6,
+    flex: 1,
+    fontSize: 13,
+    color: '#555'
+  }}>
+    <span>{l.url}</span>
+
+    <span style={{
+      width: 'fit-content',
+      paddingLeft: 10,
+      borderLeft: '1px solid #ddd'
+    }}>
+      👆 {l.clicks || 0}
+    </span>
+  </div>
+
+  {/* qr code */}
+  <img
+    src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=https://perigo.click/${l.code}`}
+    alt="QR Code"
+    style={{
+      borderRadius: 8,
+      border: '1px solid #eee'
+    }}
+  />
+
+</div>
 
             {/* ações */}
             <div style={{
