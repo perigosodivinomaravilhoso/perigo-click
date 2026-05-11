@@ -321,7 +321,7 @@ export default function Admin() {
                 }}
               >
                 <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=LINK:%20https://perigo.click/${l.code}`}
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=https://perigo.click/${l.code}`}
                   alt="QR Code"
                   style={{
                     borderRadius: 8,
